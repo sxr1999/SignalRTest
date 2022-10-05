@@ -13,7 +13,7 @@ export default {
       state.userMsg="";
     };
     onMounted(async function(){
-      connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7273/MyHub")
+      connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7273/MyHub",{skipNegotiation:true,transport:signalR.HttpTransportType.WebSockets})
       .withAutomaticReconnect().build();
       await connection.start();
       connection.on('PublicMsgReceived',rcvMsg=>{

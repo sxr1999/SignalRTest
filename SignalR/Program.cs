@@ -8,7 +8,11 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSignalR();
+//builder.Services.AddSignalR();
+builder.Services.AddSignalR().AddStackExchangeRedis("127.0.0.1", options =>
+{
+    options.Configuration.ChannelPrefix = "SignalR_Test";
+});
 string[] urls = new[] {"http://localhost:5173"};
 builder.Services.AddCors(opt =>
 {
