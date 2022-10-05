@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@microsoft/signalr": "^6.0.9",
+    "axios": "^1.0.0",
     "vue": "^3.2.37"
   },
   "devDependencies": {
