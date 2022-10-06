@@ -1,5 +1,12 @@
 <template>
-  <input type="text" v-model="state.userMsg" v-on:keypress="txtMsgOnKeypress"/>
+  <div>
+    公屏: <input type="text" v-model="state.userMsg" v-on:keypress="txtMsgOnKeypress"/>
+  </div>
+  <div>
+    私聊：
+    目标用户名: <input type="text" v-model="state.toUserName"/>
+    <input type="text" v-model="state.PrivateuserMsg" v-on:keypress="txPrivateMsgOnKeypress"/>
+  </div>
   
   <div>
         <input type="text" v-model="state.userName"/>
@@ -23,14 +30,26 @@ let connection;
 
 export default {
    setup(){
-    const state = reactive({userMsg:"",messages:[],userName:"",passWord:""});
+    const state = reactive({userMsg:"",messages:[],userName:"",passWord:"",toUserName:"",PrivateuserMsg:""});
 
     const login =async function(){
       
       const payload ={userName:state.userName,passWord:state.passWord};
         axios.post('https://localhost:7273/api/Demo/Login',payload)
-        .then(res=>{
-          alert(res.data);
+        .then(async res=>{
+          const token = res.data;
+
+          var options = {skipNegotiation:true,transport:signalR.HttpTransportType.WebSockets};
+          options.accessTokenFactory=()=>token;
+          connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7273/MyHub",options)
+          .withAutomaticReconnect().build();
+          await connection.start();
+          connection.on('PublicMsgReceived',rcvMsg=>{
+            state.messages.push(rcvMsg);
+          });
+          // connection.on('PrivateMegReceived',(fromUserName,msg)=>{
+          //   state.messages.push("用户"+fromUserName+"对你私聊说："+msg);
+          // });
         })
         .catch(err=>{
           console.log(err)
@@ -43,15 +62,21 @@ export default {
       await connection.invoke("SendPublicMessage",state.userMsg);
       state.userMsg="";
     };
+
+    const txPrivateMsgOnKeypress = async function(e){
+      if(e.keyCode != 13)
+      return;
+      await connection.invoke("SendPrivateMsg",state.toUserName,state.PrivateuserMsg);
+      state.PrivateuserMsg="";
+    };
+
+
+
     onMounted(async function(){
-      connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7273/MyHub",{skipNegotiation:true,transport:signalR.HttpTransportType.WebSockets})
-      .withAutomaticReconnect().build();
-      await connection.start();
-      connection.on('PublicMsgReceived',rcvMsg=>{
-        state.messages.push(rcvMsg);
-      });
+
+      
     });
-    return {state,txtMsgOnKeypress,login};
+    return {state,txtMsgOnKeypress,login,txPrivateMsgOnKeypress};
    }
 }
 
