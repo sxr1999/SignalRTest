@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.SignalR;
@@ -6,7 +7,7 @@ using SignalR.Models;
 
 namespace SignalR;
 
-[Authorize]
+[Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
 public class MyHub : Hub
 {
     private readonly UserManager<MyUser> _userManager;
@@ -20,9 +21,10 @@ public class MyHub : Hub
     {
         var user =await _userManager.FindByNameAsync(toUserName);
         long userid = user.Id;
-        var currentUserName = this.Context.UserIdentifier;
+        
+        var vlaim = this.Context.User.FindFirst(ClaimTypes.Name);
         //string msg = $"用户: {currentUserName},对你说{message}";
-        await this.Clients.User(userid.ToString()).SendAsync("PrivateMegReceived", currentUserName, message);
+        await this.Clients.User(userid.ToString()).SendAsync("PrivateMegReceived", vlaim.Value, message);
     }
     
     
@@ -30,7 +32,7 @@ public class MyHub : Hub
     {
         var vlaim = this.Context.User.FindFirst(ClaimTypes.Name);
         var connectionId = this.Context.ConnectionId;
-        string msg = $"{vlaim.Value} {DateTime.Now}:{message}";
+        string msg = $"{DateTime.Now},用户 {vlaim.Value}说： {message}";
         return Clients.All.SendAsync("PublicMsgReceived", msg);
     }
 }

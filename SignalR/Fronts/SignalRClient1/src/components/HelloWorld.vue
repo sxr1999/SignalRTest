@@ -1,13 +1,16 @@
 <template>
   <div>
-    公屏: <input type="text" v-model="state.userMsg" v-on:keypress="txtMsgOnKeypress"/>
+    <h3>公屏发送</h3>
+    内容:<input type="text" v-model="state.userMsg" v-on:keypress="txtMsgOnKeypress"/>
   </div>
+  <h4>=====================================</h4>
   <div>
-    私聊：
+    <h3>私聊</h3>
     目标用户名: <input type="text" v-model="state.toUserName"/>
-    <input type="text" v-model="state.PrivateuserMsg" v-on:keypress="txPrivateMsgOnKeypress"/>
+    内容:<input type="text" v-model="state.PrivateuserMsg" v-on:keypress="txPrivateMsgOnKeypress"/>
   </div>
-  
+  <h4>=====================================</h4>
+  <h3>登录</h3>
   <div>
         <input type="text" v-model="state.userName"/>
         <input type="text" v-model="state.passWord" />
@@ -44,12 +47,16 @@ export default {
           connection = new signalR.HubConnectionBuilder().withUrl("https://localhost:7273/MyHub",options)
           .withAutomaticReconnect().build();
           await connection.start();
+
+
           connection.on('PublicMsgReceived',rcvMsg=>{
             state.messages.push(rcvMsg);
           });
-          // connection.on('PrivateMegReceived',(fromUserName,msg)=>{
-          //   state.messages.push("用户"+fromUserName+"对你私聊说："+msg);
-          // });
+
+          
+          connection.on('PrivateMegReceived',(fromUserName,msg)=>{
+            state.messages.push("用户"+fromUserName+"对你私聊说："+msg);
+          });
         })
         .catch(err=>{
           console.log(err)

@@ -63,7 +63,7 @@ builder.Services.AddAuthentication(x =>
             {
                 //websocket不支持自定义请求头，所以需要把JWT放入QueryString中传递
                 var accessToken = context.Request.Query["access_token"];
-                var path = context.Request.Path;
+                var path = context.HttpContext.Request.Path;
                 //如果请求字符串不为空且请求路径是/MyHub，那么context中的token就是accessToken,
                 //服务器的OnMessageReceived方法会把querystring中的jwt读出来，然后复制给context.token;
                 if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/MyHub"))
