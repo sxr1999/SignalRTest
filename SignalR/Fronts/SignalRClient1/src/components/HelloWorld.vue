@@ -40,6 +40,7 @@ export default {
       const payload ={userName:state.userName,passWord:state.passWord};
         axios.post('https://localhost:7273/api/Demo/Login',payload)
         .then(async res=>{
+          alert("登录成功!");
           const token = res.data;
 
           var options = {skipNegotiation:true,transport:signalR.HttpTransportType.WebSockets};

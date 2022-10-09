@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
 using SignalR.Models;
@@ -24,13 +25,15 @@ namespace SignalR.DbContext
         private readonly RoleManager<MyRole> _roleManager;
         private readonly IWebHostEnvironment _environment;
         private readonly IOptionsSnapshot<JWTSettings> jwtsettings;
+        private readonly IHubContext<MyHub> _myhub;
 
-        public DemoController(UserManager<MyUser> userManager,RoleManager<MyRole> roleManager,IWebHostEnvironment environment,IOptionsSnapshot<JWTSettings> jwtsettings)
+        public DemoController(UserManager<MyUser> userManager,RoleManager<MyRole> roleManager,IWebHostEnvironment environment,IOptionsSnapshot<JWTSettings> jwtsettings,IHubContext<MyHub> myhub)
         {
             _userManager = userManager;
             _roleManager = roleManager;
             _environment = environment;
             this.jwtsettings = jwtsettings;
+            _myhub = myhub;
         }
 
 
@@ -106,6 +109,9 @@ namespace SignalR.DbContext
             {
                 return BadRequest("创建用户失败");
             }
+
+            string msg = $"欢迎用户：{model.UserName} 加入";
+            await _myhub.Clients.All.SendAsync("PublicMsgReceived", msg);
 
             return Ok();
         }
